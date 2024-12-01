@@ -93,7 +93,7 @@ class CourseController {
         }
     }
     static sendEmail = async (name, email,course) => {
-        console.log(name,email,course)
+        // console.log(name,email,course)
         // connenct with the smtp server
     
         let transporter = await nodemailer.createTransport({
@@ -102,7 +102,7 @@ class CourseController {
     
           auth: {
             user: "harishankarjha121@gmail.com",
-            pass: "",
+            pass: "yjiubvyoiabgeaxr"
           },
         });
         let info = await transporter.sendMail({

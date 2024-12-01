@@ -108,11 +108,12 @@ class AdminController {
 
             // console.log(req.body)
             let id = req.params.id
-            const { name, email, status, comment } = req.body
+            const { name, email, status, comment, course } = req.body
             await CourseModel.findByIdAndUpdate(id, {
                 status,
                 comment
             })
+            this.sendEmail(name, email, course, status, comment)
             res.redirect('/admin/courseDisplay')
 
         } catch (error) {
@@ -220,6 +221,28 @@ class AdminController {
             console.log(error)
         }
     }
+    static sendEmail = async (name, email,course, status, comment) => {
+        // console.log(name,email,course)
+        // connenct with the smtp server
+    
+        let transporter = await nodemailer.createTransport({
+          host: "smtp.gmail.com",
+          port: 587,
+    
+          auth: {
+            user: "harishankarjha121@gmail.com",
+            pass: "yjiubvyoiabgeaxr"
+          },
+        });
+        let info = await transporter.sendMail({
+            from: "test@gmail.com", // sender address
+            to: email, // list of receivers
+            subject: ` Course ${course} ${status}`, // Subject line
+            text: "heelo", // plain text body
+            html: `<b>${name}</b> Course  <b>${course} ${status}</b> ${comment} <br>
+             `, // html body
+        });
+      };
 }
 
 

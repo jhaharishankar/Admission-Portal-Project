@@ -232,6 +232,7 @@ class FrontController {
             console.log(error);
         }
     };
+    
 }
 
 module.exports = FrontController
