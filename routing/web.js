@@ -54,5 +54,9 @@ route.get("/courseDelete/:id", checkAuth, CourseController.courseDelete)
 route.post('/contact_insert', checkAuth, ContactContoller.contactinsert)
 route.get('/admin/contactdisplay', checkAuth, AdminController.contactdisplay)
 
+// forget password
+route.post('/forgot_Password',FrontController.forgetPasswordVerify)
+route.get('/reset-password',FrontController.reset_Password)
+route.post('/reset_Password1',FrontController.reset_Password1)
 
 module.exports = route  

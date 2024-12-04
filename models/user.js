@@ -27,6 +27,9 @@ const UserSchema = mongoose.Schema({
             required: true
         }
     },
+    token: {
+        type:String
+    }
 },{timestamps:true})
 const UserModel = mongoose.model('user',UserSchema)
 module.exports = UserModel
