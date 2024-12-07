@@ -45,7 +45,7 @@ class FrontController {
     }
     static register = async (req, res) => {
         try {
-            res.render("register", { message: req.flash("error") });
+            res.render("register", { message: req.flash("error"), msg: req.flash("success") });
         } catch (error) {
             console.log(error)
         }
@@ -101,6 +101,19 @@ class FrontController {
                     url: imageUpload.secure_url
                 }
             });
+            if (data) {
+                let token = jwt.sign({ ID: data._id }, 'gdaugdasg@1213')
+                // console.log(token)
+                res.cookie('token', token)
+                this.sendVerifymail(name, email, data._id);
+                //To redirect to login page
+                req.flash("success", "Your Registration has been successfully.Please verify your mail. .");
+                res.redirect("/register");
+            }
+            else {
+                req.flash("error", "Not Register.");
+                res.redirect("/register");
+            }
             req.flash("success", "Register Success! Plz Login");
             res.redirect("/") /// route ** web
 
@@ -108,6 +121,33 @@ class FrontController {
             console.log(error)
         }
     }
+    static sendVerifymail = async (name, email, user_id) => {
+        //console.log(name, email, user_id);
+        // connenct with the smtp server
+
+        let transporter = await nodemailer.createTransport({
+            host: "smtp.gmail.com",
+            port: 587,
+
+            auth: {
+                user: "harishankarjha121@gmail.com",
+                pass: "yjiubvyoiabgeaxr",
+            },
+        });
+        let info = await transporter.sendMail({
+            from: "test@gmail.com", // sender address
+            to: email, // list of receivers
+            subject: "For Verification mail", // Subject line
+            text: "heelo", // plain text body
+            html:
+                "<p>Hii " +
+                name +
+                ',Please click here to <a href="http://localhost:3000/verify?id=' +
+                user_id +
+                '">Verify</a>Your mail</p>.',
+        });
+        //console.log(info);
+    };
     static verifyLogin = async (req, res) => {
         try {
             // console.log(req.body)
@@ -242,7 +282,7 @@ class FrontController {
             const userData = await UserModel.findOne({ email: email });
             //console.log(userData)
             if (userData) {
-                const randomString = randomstring.generate(); 
+                const randomString = randomstring.generate();
                 await UserModel.updateOne(
                     { email: email },
                     { $set: { token: randomString } }
@@ -261,56 +301,69 @@ class FrontController {
     static sendEmail = async (name, email, token) => {
         // console.log(name,email,status,comment)
         // connenct with the smtp server
-    
+
         let transporter = await nodemailer.createTransport({
-          host: "smtp.gmail.com",
-          port: 587,
-    
-          auth: {
-            user: "harishankarjha121@gmail.com",
-            pass: "yjiubvyoiabgeaxr"
-          },
+            host: "smtp.gmail.com",
+            port: 587,
+
+            auth: {
+                user: "harishankarjha121@gmail.com",
+                pass: "yjiubvyoiabgeaxr"
+            },
         });
         let info = await transporter.sendMail({
-          from: "test@gmail.com", // sender address
-          to: email, // list of receivers
-          subject: "Reset Password", // Subject line
-          text: "heelo", // plain text body
-          html:
-            "<p>Hii " +
-            name +
-            ',Please click here to <a href="http://localhost:3000/reset-password?token=' +
-            token +
-            '">Reset</a>Your Password.',
+            from: "test@gmail.com", // sender address
+            to: email, // list of receivers
+            subject: "Reset Password", // Subject line
+            text: "heelo", // plain text body
+            html:
+                "<p>Hii " +
+                name +
+                ',Please click here to <a href="http://localhost:3000/reset-password?token=' +
+                token +
+                '">Reset</a>Your Password.',
         });
     };
-    static reset_Password = async (req, res) => {
+    static verifyMail = async (req, res) => {
         try {
-          const token = req.query.token;
-          const tokenData = await UserModel.findOne({ token: token });
-          if (tokenData) {
-            res.render("reset-password", { user_id: tokenData._id });
-          } else {
-            res.render("404");
+          const updateinfo = await UserModel.findByIdAndUpdate(req.query.id, {
+            is_verified: 1,
+          });
+          if (updateinfo) {
+            res.redirect("/home");
           }
         } catch (error) {
           console.log(error);
         }
       };
-      static reset_Password1 = async (req, res) => {
+    static reset_Password = async (req, res) => {
         try {
-          const { password, user_id } = req.body;
-          const newHashPassword = await bcrypt.hash(password, 10);
-          await UserModel.findByIdAndUpdate(user_id, {
-            password: newHashPassword,
-            token: "",
-          });
-          req.flash("success", "Reset Password Updated successfully ");
-          res.redirect("/");
+            const token = req.query.token;
+            const tokenData = await UserModel.findOne({ token: token });
+            if (tokenData) {
+                res.render("reset-password", { user_id: tokenData._id });
+            } else {
+                res.render("404");
+            }
         } catch (error) {
-          console.log(error);
+            console.log(error);
         }
-      };
+    };
+    static reset_Password1 = async (req, res) => {
+        try {
+            const { password, user_id } = req.body;
+            const newHashPassword = await bcrypt.hash(password, 10);
+            await UserModel.findByIdAndUpdate(user_id, {
+                password: newHashPassword,
+                token: "",
+            });
+            req.flash("success", "Reset Password Updated successfully ");
+            res.redirect("/");
+        } catch (error) {
+            console.log(error);
+        }
+    };
+
 }
 
 module.exports = FrontController

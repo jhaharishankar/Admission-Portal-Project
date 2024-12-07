@@ -29,6 +29,10 @@ const UserSchema = mongoose.Schema({
     },
     token: {
         type:String
+    },
+    is_verified:{
+        type:Number,
+        default:0
     }
 },{timestamps:true})
 const UserModel = mongoose.model('user',UserSchema)
